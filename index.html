@@ -2,31 +2,45 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eden AI - Audio Generator con Console</title>
+    <!-- Ottimizzazione per dispositivi mobili: disabilita lo zoom per sembrare un'app nativa -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HFAudio - Generatore AI</title>
+    
+    <!-- ========================================== -->
+    <!-- CONFIGURAZIONE PWA (Progressive Web App)   -->
+    <!-- ========================================== -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Collegamento al foglio di stile -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="app-container">
-        <h2>Eden AI Text-to-Speech</h2>
-        <p class="info-text">Inferenza tramite l'aggregatore Eden AI</p>
+        <h2>Hugging Face TTS</h2>
+        <p class="info-text">Inferenza Serverless senza carta di credito</p>
         
-        <input type="hidden" id="apiKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNmMzMTk5N2EtZjY5ZC00Mjk0LTlkMGUtNGIyY2ZiNTAwZmZmIiwidHlwZSI6ImFwaV90b2tlbiJ9.wt6ZJSD4Xm1yBAIQX6L-_ybD85peA1hwefWyZxnZ-Ag">
+        <div class="input-group">
+            <label for="apiKey">API Key Hugging Face (inizia con hf_)</label>
+            <input type="password" id="apiKey" placeholder="hf_................................">
+        </div>
 
         <div class="input-group">
-            <label for="provider">Seleziona Modello/Provider</label>
-            <select id="provider">
-                <option value="openai">OpenAI (TTS)</option>
-                <option value="google">Google</option>
-                <option value="amazon">Amazon (AWS)</option>
-                <option value="microsoft">Microsoft Azure</option>
+            <label for="modelSelect">Seleziona Modello Open Source</label>
+            <select id="modelSelect">
+                <!-- Modelli gratuiti preimpostati -->
+                <option value="facebook/mms-tts-ita">Facebook MMS (Italiano - Veloce)</option>
+                <option value="suno/bark-small">Suno Bark Small (Multilingua - Lento)</option>
             </select>
         </div>
 
         <div class="input-group">
-            <label for="prompt">Testo da generare (Italiano)</label>
-            <input type="text" id="prompt" placeholder="Ciao, questo è un test audio tramite Eden AI.">
+            <label for="prompt">Testo da generare</label>
+            <input type="text" id="prompt" placeholder="Scrivi qui il testo...">
         </div>
 
         <button id="generateBtn">Genera Audio</button>
@@ -34,15 +48,34 @@
         <div id="status-box"></div>
         <audio id="audioPlayer" controls></audio>
         
-        <!-- Nuova finestra della console UI -->
+        <!-- Finestra della console UI per intercettare gli errori dal telefono -->
         <div class="console-container">
             <div class="console-header">Console Debugger</div>
             <div id="console-output"></div>
         </div>
     </div>
 
-    <!-- Il logger deve essere caricato per primo per intercettare tutto -->
+    <!-- Caricamento degli script logici -->
     <script src="logger.js"></script>
     <script src="script.js"></script>
+
+    <!-- ========================================== -->
+    <!-- REGISTRAZIONE SERVICE WORKER PER LA PWA    -->
+    <!-- ========================================== -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registrato con successo (Scope: ' + registration.scope + ')');
+                    })
+                    .catch(error => {
+                        console.error('Registrazione Service Worker fallita:', error);
+                    });
+            });
+        } else {
+            console.log('I Service Worker non sono supportati in questo browser.');
+        }
+    </script>
 </body>
 </html>

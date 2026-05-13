@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eden AI - Audio Generator</title>
-    <!-- Collegamento al file CSS -->
+    <title>Eden AI - Audio Generator con Console</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,7 +12,6 @@
         <h2>Eden AI Text-to-Speech</h2>
         <p class="info-text">Inferenza tramite l'aggregatore Eden AI</p>
         
-        <!-- API Key -->
         <input type="hidden" id="apiKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNmMzMTk5N2EtZjY5ZC00Mjk0LTlkMGUtNGIyY2ZiNTAwZmZmIiwidHlwZSI6ImFwaV90b2tlbiJ9.wt6ZJSD4Xm1yBAIQX6L-_ybD85peA1hwefWyZxnZ-Ag">
 
         <div class="input-group">
@@ -35,9 +33,16 @@
 
         <div id="status-box"></div>
         <audio id="audioPlayer" controls></audio>
+        
+        <!-- Nuova finestra della console UI -->
+        <div class="console-container">
+            <div class="console-header">Console Debugger</div>
+            <div id="console-output"></div>
+        </div>
     </div>
 
-    <!-- Collegamento al file JavaScript -->
+    <!-- Il logger deve essere caricato per primo per intercettare tutto -->
+    <script src="logger.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

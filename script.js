@@ -1,78 +1,95 @@
-// Inizializza l'evento di click solo quando il documento HTML è completamente caricato
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById("generateBtn");
-    btn.addEventListener("click", generateAudio);
+    if (btn) {
+        btn.addEventListener("click", generateAudio);
+    }
 });
 
 async function generateAudio() {
-    const apiKey = document.getElementById("apiKey").value.trim();
-    const prompt = document.getElementById("prompt").value.trim();
-    const provider = document.getElementById("provider").value;
-    const btn = document.getElementById("generateBtn");
-    const statusBox = document.getElementById("status-box");
-    const audioPlayer = document.getElementById("audioPlayer");
-
-    if (!prompt) {
-        alert("Inserisci il testo da generare.");
-        return;
-    }
-
-    // Setup UI per il caricamento
-    btn.disabled = true;
-    audioPlayer.style.display = "none";
-    statusBox.style.display = "block";
-    statusBox.style.color = "var(--text)";
-    statusBox.innerHTML = `Contattando l'API di Eden AI (${provider})...`;
-
     try {
-        // Configurazione della richiesta secondo la documentazione ufficiale di Eden AI
-        const options = {
-            method: 'POST',
-            headers: {
-                'accept': 'application/json',
-                'content-type': 'application/json',
-                'authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                providers: provider, // Il provider scelto dal menu a tendina
-                language: 'it',      // Lingua italiana
-                text: prompt,
-                option: 'FEMALE'     // Opzione voce (FEMALE o MALE)
-            })
-        };
+        // 1. Recupero degli elementi HTML in modo sicuro
+        const apiKeyElement = document.getElementById("apiKey");
+        const promptElement = document.getElementById("prompt");
+        const modelElement = document.getElementById("modelSelect"); // Ora cerca quello corretto
+        const btn = document.getElementById("generateBtn");
+        const statusBox = document.getElementById("status-box");
+        const audioPlayer = document.getElementById("audioPlayer");
 
-        // Chiamata all'endpoint Text-to-Speech
-        const response = await fetch('https://api.edenai.run/v2/audio/text_to_speech', options);
+        // Se un elemento non esiste, fermati e avvisa la console prima di andare in crash
+        if (!apiKeyElement || !promptElement || !modelElement) {
+            throw new Error("Disallineamento HTML/JS: Impossibile trovare i campi di input nella pagina.");
+        }
+
+        const apiKey = apiKeyElement.value.trim();
+        const prompt = promptElement.value.trim();
+        const model = modelElement.value;
+
+        // 2. Controlli di validazione
+        if (!apiKey.startsWith("hf_")) {
+            throw new Error("Devi inserire un token Hugging Face valido (inizia con hf_).");
+        }
+
+        if (!prompt) {
+            throw new Error("Il campo testo è vuoto.");
+        }
+
+        // 3. Preparazione Interfaccia (Caricamento)
+        btn.disabled = true;
+        audioPlayer.style.display = "none";
+        statusBox.style.display = "block";
+        statusBox.style.color = "var(--text)";
+        statusBox.innerHTML = `Richiesta in corso verso ${model}...`;
+        console.log(`Inizio inferenza con modello: ${model}`);
+
+        // 4. Chiamata API a Hugging Face
+        const API_URL = `https://api-inference.huggingface.co/models/${model}`;
         
-        const data = await response.json();
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ "inputs": prompt })
+        });
+
+        // Gestione errore 503 (modello in caricamento)
+        if (response.status === 503) {
+            const data = await response.json();
+            const estimatedTime = Math.round(data.estimated_time || 20);
+            throw new Error(`Il modello gratuito è in standby. Attendi circa ${estimatedTime} secondi e clicca di nuovo su Genera.`);
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || `Errore HTTP: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Errore HTTP ${response.status}: ${errorText}`);
         }
 
-        // Eden AI restituisce i risultati raggruppati per provider
-        const providerResult = data[provider];
+        // 5. Gestione Audio e Riproduzione
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        audioPlayer.src = audioUrl;
+        audioPlayer.style.display = "block";
+        audioPlayer.play();
 
-        if (providerResult && providerResult.status === "success") {
-            statusBox.innerHTML = "Generazione completata con successo!";
-            
-            // Impostiamo l'URL dell'audio nel player
-            audioPlayer.src = providerResult.audio_resource_url;
-            audioPlayer.style.display = "block";
-            audioPlayer.play();
-        } else if (providerResult && providerResult.error) {
-            throw new Error(`Errore del provider ${provider}: ${providerResult.error.message}`);
-        } else {
-            throw new Error("Risposta inaspettata dal server.");
-        }
+        statusBox.innerHTML = "Audio generato con successo!";
+        console.log("Generazione completata.");
 
     } catch (error) {
-        console.error(error);
-        statusBox.style.color = "var(--error)";
-        statusBox.innerHTML = "<strong>Errore:</strong> " + error.message;
+        // L'errore viene intercettato qui e mandato alla tua console personalizzata
+        console.error(error.message);
+        const statusBox = document.getElementById("status-box");
+        if (statusBox) {
+            statusBox.style.color = "var(--error)";
+            statusBox.innerHTML = "<strong>Generazione Fallita:</strong> Controlla la console in basso.";
+        }
     } finally {
-        // Ripristino del bottone
-        btn.disabled = false;
-        btn.innerText = "Genera Audio";
+        // Ripristina il pulsante alla fine
+        const btn = document.getElementById("generateBtn");
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Genera Audio";
+        }
     }
 }

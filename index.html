@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eden AI - Audio Generator</title>
+    <!-- Collegamento al file CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>Eden AI Text-to-Speech</h2>
+        <p class="info-text">Inferenza tramite l'aggregatore Eden AI</p>
+        
+        <!-- API Key -->
+        <input type="hidden" id="apiKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNmMzMTk5N2EtZjY5ZC00Mjk0LTlkMGUtNGIyY2ZiNTAwZmZmIiwidHlwZSI6ImFwaV90b2tlbiJ9.wt6ZJSD4Xm1yBAIQX6L-_ybD85peA1hwefWyZxnZ-Ag">
+
+        <div class="input-group">
+            <label for="provider">Seleziona Modello/Provider</label>
+            <select id="provider">
+                <option value="openai">OpenAI (TTS)</option>
+                <option value="google">Google</option>
+                <option value="amazon">Amazon (AWS)</option>
+                <option value="microsoft">Microsoft Azure</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="prompt">Testo da generare (Italiano)</label>
+            <input type="text" id="prompt" placeholder="Ciao, questo è un test audio tramite Eden AI.">
+        </div>
+
+        <button id="generateBtn">Genera Audio</button>
+
+        <div id="status-box"></div>
+        <audio id="audioPlayer" controls></audio>
+    </div>
+
+    <!-- Collegamento al file JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
